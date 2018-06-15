@@ -27,10 +27,9 @@ public class HarvardArtMuseumFetch {
             .parse("https://api.harvardartmuseums.org")
             .buildUpon()
             .appendQueryParameter("apikey", API_KEY)
-            .appendQueryParameter("size", "1000")
             .build();
 
-    public byte[] getUrlBytes(String urlString) throws IOException {
+    private byte[] getUrlBytes(String urlString) throws IOException {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -42,7 +41,7 @@ public class HarvardArtMuseumFetch {
                 throw new IOException(connection.getResponseMessage() + ": with " + urlString);
             }
 
-            int bytesRead = 0;
+            int bytesRead;
             byte[] buffer = new byte[1024];
             while ((bytesRead = in.read(buffer)) > 0) {
                 out.write(buffer, 0, bytesRead);
@@ -55,16 +54,40 @@ public class HarvardArtMuseumFetch {
         }
     }
 
-    public String getUrlString(String urlString) throws IOException {
+    private String getUrlString(String urlString) throws IOException {
         return new String(getUrlBytes(urlString));
     }
 
-    public List<CultureItem> fetchCutureItems() {
+    private String buildUrl(String  cultureId) {
+        /*
+        Note about Harvard Art Museum API:
+        There are around 255 cultures, so giving size = 1000 will return all cultures in one page.
+        For objects, the maximum objects returned per page is 100.
+
+         */
+        Uri.Builder uriBuilder = ENDPOINT.buildUpon();
+        if (cultureId == null) {
+            // Display list of all cultures
+            uriBuilder
+                    .appendPath(CULTURE_RESOURCE)
+                    .appendQueryParameter("size", "1000");
+        }
+        else {
+            // Display list of objects of a certain culture
+            uriBuilder
+                    .appendPath(OBJECT_RESOURCE)
+                    .appendQueryParameter(CULTURE_RESOURCE, cultureId)
+                    .appendQueryParameter("size", "100");
+        }
+        return uriBuilder.build().toString();
+    }
+
+    public List<CultureItem> fetchCultureItems() {
 
         List<CultureItem> items = new ArrayList<>();
 
         try {
-            String urlString = buildUrl(CULTURE_RESOURCE);
+            String urlString = buildUrl(null);
             String jsonString = getUrlString(urlString);
             Log.i(TAG, urlString);
             Log.i(TAG, "Received JSON: " + jsonString);
@@ -81,13 +104,7 @@ public class HarvardArtMuseumFetch {
         return items;
     }
 
-    private String buildUrl(String resourceType) {
-        Uri.Builder uriBuilder = ENDPOINT.buildUpon()
-                .appendPath(resourceType);
-        return uriBuilder.build().toString();
-    }
-
-    private void parseCultureItems(List<CultureItem> items, JSONObject jsonObject) throws IOException, JSONException {
+    private void parseCultureItems(List<CultureItem> items, JSONObject jsonObject) throws JSONException {
         JSONArray recordsJsonArray = jsonObject.getJSONArray("records");
 
         for (int i = 0; i < recordsJsonArray.length(); i++) {
@@ -105,5 +122,44 @@ public class HarvardArtMuseumFetch {
                 return o1.getCulture().compareTo(o2.getCulture());
             }
         });
+    }
+
+    public List<ObjectItem> getObjectItems(String cultureId) {
+        List<ObjectItem> items = new ArrayList<>();
+
+        try {
+            String urlString = buildUrl(cultureId);
+            String jsonString = getUrlString(urlString);
+            JSONObject jsonObject = new JSONObject(jsonString);
+            parseObjectItems(items, jsonObject);
+        }
+        catch (IOException ioe) {
+            Log.e(TAG, "Failed to fetch items", ioe);
+        }
+        catch (JSONException je) {
+            Log.e(TAG, "Failed to parse JSON", je);
+        }
+
+        return items;
+    }
+
+    private void parseObjectItems(List<ObjectItem> items, JSONObject jsonObject) throws JSONException {
+        JSONArray recordsJsonArrray = jsonObject.getJSONArray("records");
+
+        for (int i = 0; i < recordsJsonArrray.length(); i++) {
+            JSONObject js = recordsJsonArrray.getJSONObject(i);
+
+            if (!js.has("primaryimageurl") || js.isNull("primaryimageurl")) {
+                break;
+            }
+
+            ObjectItem item = new ObjectItem();
+            item.setTitle(js.getString("title"));
+            item.setPrimaryImageUrl(js.getString("primaryimageurl"));
+            item.setDated(js.getString("dated"));
+            item.setPeriod(js.getString("period"));
+            item.setMedium(js.getString("medium"));
+            items.add(item);
+        }
     }
 }

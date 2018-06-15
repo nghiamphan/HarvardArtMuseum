@@ -20,6 +20,7 @@ import java.util.List;
 public class MainMenuFragment extends Fragment {
 
     private static final String TAG = "MainMenuFragment";
+
     private List<CultureItem> mCultureItems = new ArrayList<>();
 
     private RecyclerView mRecyclerView;
@@ -76,7 +77,7 @@ public class MainMenuFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            Intent intent = PhotoGalleryActivity.newIntent(getActivity(), mCultureItem.getCulture());
+            Intent intent = PhotoGalleryActivity.newIntent(getActivity(), mCultureItem.getCulture(), mCultureItem.getId());
             startActivity(intent);
         }
     }
@@ -125,7 +126,7 @@ public class MainMenuFragment extends Fragment {
     private class FetchItemsTask extends AsyncTask<Void, Void, List<CultureItem>> {
         @Override
         protected List<CultureItem> doInBackground(Void... voids) {
-            return new HarvardArtMuseumFetch().fetchCutureItems();
+            return new HarvardArtMuseumFetch().fetchCultureItems();
         }
 
         @Override

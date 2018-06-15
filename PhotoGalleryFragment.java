@@ -11,19 +11,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PhotoGalleryFragment extends Fragment {
 
     private static final String TAG = "PhotoGalleryFragment";
     private static final String ARG_CULTURE_NAME = "culture_name";
+    private static final String ARG_CULTURE_ID = "culture_id";
 
     private String mCulture;
+    private List<ObjectItem> mObjectItems = new ArrayList<>();
 
     private RecyclerView mRecyclerView;
 
-    public static PhotoGalleryFragment newInstance(String culture) {
+    public static PhotoGalleryFragment newInstance(String culture, String cultureId) {
 
         Bundle args = new Bundle();
         args.putString(ARG_CULTURE_NAME, culture);
+        args.putString(ARG_CULTURE_ID, cultureId);
 
         PhotoGalleryFragment fragment = new PhotoGalleryFragment();
         fragment.setArguments(args);
@@ -44,7 +50,7 @@ public class PhotoGalleryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_recycler_view, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 
         return view;
     }

@@ -1,12 +1,13 @@
 package com.nphan.android.harvardartmuseum;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,10 +43,10 @@ public class MainMenuFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_main_menu, container, false);
+        View v = inflater.inflate(R.layout.fragment_recycler_view, container, false);
 
-        mRecyclerView = v.findViewById(R.id.photo_recycler_view);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+        mRecyclerView = v.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return v;
     }
@@ -56,16 +57,27 @@ public class MainMenuFragment extends Fragment {
         }
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder {
+    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private CultureItem mCultureItem;
+
         private TextView mMenuItemTextView;
 
         public PhotoHolder(View itemView) {
             super(itemView);
             mMenuItemTextView = itemView.findViewById(R.id.menu_item);
+            itemView.setOnClickListener(this);
         }
 
-        public void bindGalleryItem(CultureItem item) {
-            mMenuItemTextView.setText(item.getCulture());
+        public void bindMenuItem(CultureItem cultureItem) {
+            mCultureItem = cultureItem;
+            mMenuItemTextView.setText(cultureItem.getCulture());
+        }
+
+        @Override
+        public void onClick(View view) {
+            Intent intent = PhotoGalleryActivity.newIntent(getActivity(), mCultureItem.getCulture());
+            startActivity(intent);
         }
     }
 
@@ -86,7 +98,6 @@ public class MainMenuFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull PhotoHolder holder, int position) {
-            CultureItem cultureItem = mCultureItems.get(position);
             Resources resources = getResources();
             switch (position % 4) {
                 case 0:
@@ -101,7 +112,8 @@ public class MainMenuFragment extends Fragment {
                 case 3:
                     holder.itemView.setBackgroundColor(resources.getColor(R.color.blue));
             }
-            holder.bindGalleryItem(cultureItem);
+            CultureItem cultureItem = mCultureItems.get(position);
+            holder.bindMenuItem(cultureItem);
         }
 
         @Override
@@ -113,7 +125,7 @@ public class MainMenuFragment extends Fragment {
     private class FetchItemsTask extends AsyncTask<Void, Void, List<CultureItem>> {
         @Override
         protected List<CultureItem> doInBackground(Void... voids) {
-            return new HarvardArtMuseumFetch().fetchItems();
+            return new HarvardArtMuseumFetch().fetchCutureItems();
         }
 
         @Override

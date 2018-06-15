@@ -21,6 +21,14 @@ public class HarvardArtMuseumFetch {
 
     private static final String TAG = "ArtFetch";
     private static final String API_KEY = "57818250-6aaa-11e8-932e-e1bd830b7046";
+    private static final String CULTURE_RESOURCE = "culture";
+    private static final String OBJECT_RESOURCE = "object";
+    private static final Uri ENDPOINT = Uri
+            .parse("https://api.harvardartmuseums.org")
+            .buildUpon()
+            .appendQueryParameter("apikey", API_KEY)
+            .appendQueryParameter("size", "1000")
+            .build();
 
     public byte[] getUrlBytes(String urlString) throws IOException {
         URL url = new URL(urlString);
@@ -51,21 +59,17 @@ public class HarvardArtMuseumFetch {
         return new String(getUrlBytes(urlString));
     }
 
-    public List<CultureItem> fetchItems() {
+    public List<CultureItem> fetchCutureItems() {
 
         List<CultureItem> items = new ArrayList<>();
 
         try {
-            String url = Uri.parse("https://api.harvardartmuseums.org/culture")
-                    .buildUpon()
-                    .appendQueryParameter("apikey", API_KEY)
-                    .appendQueryParameter("size", "1000")
-                    .build().toString();
-            String jsonString = getUrlString(url);
-            Log.i(TAG, url);
+            String urlString = buildUrl(CULTURE_RESOURCE);
+            String jsonString = getUrlString(urlString);
+            Log.i(TAG, urlString);
             Log.i(TAG, "Received JSON: " + jsonString);
             JSONObject jsonObject = new JSONObject(jsonString);
-            parseItems(items, jsonObject);
+            parseCultureItems(items, jsonObject);
         }
         catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);
@@ -77,15 +81,22 @@ public class HarvardArtMuseumFetch {
         return items;
     }
 
-    private void parseItems(List<CultureItem> items, JSONObject jsonObject) throws IOException, JSONException {
+    private String buildUrl(String resourceType) {
+        Uri.Builder uriBuilder = ENDPOINT.buildUpon()
+                .appendPath(resourceType);
+        return uriBuilder.build().toString();
+    }
+
+    private void parseCultureItems(List<CultureItem> items, JSONObject jsonObject) throws IOException, JSONException {
         JSONArray recordsJsonArray = jsonObject.getJSONArray("records");
 
         for (int i = 0; i < recordsJsonArray.length(); i++) {
-            JSONObject periodJsonObject = recordsJsonArray.getJSONObject(i);
+            JSONObject cultureJsonObject = recordsJsonArray.getJSONObject(i);
 
             CultureItem item = new CultureItem();
-            item.setCulture(periodJsonObject.getString("name"));
-            Log.i(TAG, periodJsonObject.getString("name"));
+            item.setId(cultureJsonObject.getString("id"));
+            item.setCulture(cultureJsonObject.getString("name"));
+            Log.i(TAG, cultureJsonObject.getString("name"));
             items.add(item);
         }
         Collections.sort(items, new Comparator<CultureItem>() {

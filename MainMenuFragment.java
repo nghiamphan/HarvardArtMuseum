@@ -54,17 +54,17 @@ public class MainMenuFragment extends Fragment {
 
     private void setupAdapter() {
         if (isAdded()) {
-            mRecyclerView.setAdapter(new PhotoAdapter(mCultureItems));
+            mRecyclerView.setAdapter(new CultureItemAdapter(mCultureItems));
         }
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private class CultureItemHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private CultureItem mCultureItem;
 
         private TextView mMenuItemTextView;
 
-        public PhotoHolder(View itemView) {
+        public CultureItemHolder(View itemView) {
             super(itemView);
             mMenuItemTextView = itemView.findViewById(R.id.menu_item);
             itemView.setOnClickListener(this);
@@ -82,23 +82,23 @@ public class MainMenuFragment extends Fragment {
         }
     }
 
-    private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
+    private class CultureItemAdapter extends RecyclerView.Adapter<CultureItemHolder> {
         private List<CultureItem> mCultureItems;
 
-        public PhotoAdapter(List<CultureItem> cultureItems) {
+        public CultureItemAdapter(List<CultureItem> cultureItems) {
             mCultureItems = cultureItems;
         }
 
         @NonNull
         @Override
-        public PhotoHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public CultureItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(getActivity());
             View itemView = inflater.inflate(R.layout.list_item_main_menu, parent, false);
-            return new PhotoHolder(itemView);
+            return new CultureItemHolder(itemView);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull PhotoHolder holder, int position) {
+        public void onBindViewHolder(@NonNull CultureItemHolder holder, int position) {
             Resources resources = getResources();
             switch (position % 4) {
                 case 0:

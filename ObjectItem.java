@@ -1,49 +1,58 @@
 package com.nphan.android.harvardartmuseum;
 
 public class ObjectItem {
-    private String title;
-    private String primaryImageUrl;
-    private String dated;
-    private String period;
-    private String medium;
+    private String mTitle;
+    private String mPrimaryImageUrl;
+    private String mDated;
+    private String mPeriod;
+    private String mMedium;
 
     public String getTitle() {
-        return title;
+        return mTitle;
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        this.mTitle = title;
     }
 
     public String getPrimaryImageUrl() {
-        return primaryImageUrl;
+        return mPrimaryImageUrl;
     }
 
     public void setPrimaryImageUrl(String primaryImageUrl) {
-        this.primaryImageUrl = primaryImageUrl;
+        this.mPrimaryImageUrl = primaryImageUrl;
     }
 
     public String getDated() {
-        return dated;
+        return mDated;
     }
 
     public void setDated(String dated) {
-        this.dated = dated;
+        if (dated.equals("null")) {
+            dated = "unknown";
+        }
+        this.mDated = dated;
     }
 
     public String getPeriod() {
-        return period;
+        return mPeriod;
     }
 
     public void setPeriod(String period) {
-        this.period = period;
+        if (period.equals("null")) {
+            period = "unknown";
+        }
+        this.mPeriod = period;
     }
 
     public String getMedium() {
-        return medium;
+        return mMedium;
     }
 
     public void setMedium(String medium) {
-        this.medium = medium;
+        if (medium.equals("null")) {
+            medium = "unknown";
+        }
+        this.mMedium = medium;
     }
 }

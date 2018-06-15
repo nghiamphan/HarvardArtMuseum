@@ -124,7 +124,7 @@ public class HarvardArtMuseumFetch {
         });
     }
 
-    public List<ObjectItem> getObjectItems(String cultureId) {
+    public List<ObjectItem> fetchObjectItems(String cultureId) {
         List<ObjectItem> items = new ArrayList<>();
 
         try {

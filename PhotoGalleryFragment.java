@@ -15,7 +15,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +80,7 @@ public class PhotoGalleryFragment extends Fragment {
     private class ObjectItemHolder extends RecyclerView.ViewHolder {
 
         private ObjectItem mObjectItem;
+        private ImageView mImageView;
         private TextView mTitleTextView;
         private TextView mDateTextView;
         private TextView mPeriodTextView;
@@ -84,6 +88,7 @@ public class PhotoGalleryFragment extends Fragment {
 
         public ObjectItemHolder(View itemView) {
             super(itemView);
+            mImageView = itemView.findViewById(R.id.object_image);
             mTitleTextView = itemView.findViewById(R.id.object_title);
             mDateTextView = itemView.findViewById(R.id.object_date);
             mPeriodTextView = itemView.findViewById(R.id.object_period);
@@ -92,6 +97,11 @@ public class PhotoGalleryFragment extends Fragment {
 
         public void bindObjectItem(ObjectItem objectItem) {
             mObjectItem = objectItem;
+
+            Picasso.get()
+                    .load(objectItem.getPrimaryImageUrl())
+                    .placeholder(R.drawable.loading_placeholder)
+                    .into(mImageView);
 
             Resources rs = getResources();
 

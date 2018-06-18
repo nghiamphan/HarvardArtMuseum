@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">HarvardArtMuseum</string>
+    <string name="object_title">
+        <![CDATA[
+        <b>Title: </b>
+        ]]>
+    </string>
+    <string name="object_date">
+        <![CDATA[
+        <b>Date: </b>
+        ]]>
+    </string>
+    <string name="object_period">
+        <![CDATA[
+        <b>Period: </b>
+        ]]>
+    </string>
+    <string name="object_medium">
+        <![CDATA[
+        <b>Medium: </b>
+        ]]>
+    </string>
+</resources>

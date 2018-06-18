@@ -113,7 +113,7 @@ public class HarvardArtMuseumFetch {
             CultureItem item = new CultureItem();
             item.setId(cultureJsonObject.getString("id"));
             item.setCulture(cultureJsonObject.getString("name"));
-            Log.i(TAG, cultureJsonObject.getString("name"));
+            //Log.i(TAG, cultureJsonObject.getString("name"));
             items.add(item);
         }
         Collections.sort(items, new Comparator<CultureItem>() {
@@ -150,7 +150,7 @@ public class HarvardArtMuseumFetch {
             JSONObject js = recordsJsonArrray.getJSONObject(i);
 
             if (!js.has("primaryimageurl") || js.isNull("primaryimageurl")) {
-                break;
+                continue;
             }
 
             ObjectItem item = new ObjectItem();

@@ -1,9 +1,6 @@
 package com.nphan.android.harvardartmuseum;
 
-import java.io.Serializable;
-
-public class CultureItem implements Serializable{
-    private static final long serialVersionUID = -7060210544600464481L;
+public class CultureItem {
     private String mId;
     private String mCulture;
 

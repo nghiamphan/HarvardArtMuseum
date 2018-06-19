@@ -1,8 +1,12 @@
 package com.nphan.android.harvardartmuseum;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,8 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,7 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String ARG_CULTURE_ID = "culture_id";
 
     private List<ObjectItem> mObjectItems = new ArrayList<>();
+    private ThumbnailDownloader<ObjectItemHolder> mThumbnailDownloader;
 
     private RecyclerView mRecyclerView;
 
@@ -49,14 +53,28 @@ public class PhotoGalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
+        new FetchItemsTask().execute();
+
+        Handler responseHandler = new Handler();
+        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+        mThumbnailDownloader.setThumbnailDownloadListener(
+                new ThumbnailDownloader.ThumbnailDownloadListener<ObjectItemHolder>() {
+                    @Override
+                    public void onThumbnailDownloaded(ObjectItemHolder holder, Bitmap thumbnail) {
+                        Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                        holder.mImageView.setImageDrawable(drawable);
+                    }
+                }
+        );
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler_view, container, false);
-
-        new FetchItemsTask().execute();
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
@@ -69,6 +87,19 @@ public class PhotoGalleryFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         activity.getSupportActionBar().setTitle(getArguments().getString(ARG_CULTURE_NAME));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mThumbnailDownloader.clearQueue();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mThumbnailDownloader.quit();
+        Log.i(TAG, "Background thread destroyed");
     }
 
     private void setupAdapter() {
@@ -98,13 +129,9 @@ public class PhotoGalleryFragment extends Fragment {
         public void bindObjectItem(ObjectItem objectItem) {
             mObjectItem = objectItem;
 
-            Picasso.get()
-                    .load(objectItem.getPrimaryImageUrl())
-                    .placeholder(R.drawable.loading_placeholder)
-                    .into(mImageView);
-
             Resources rs = getResources();
 
+            mImageView.setImageDrawable(rs.getDrawable(R.drawable.loading_placeholder));
             mTitleTextView.setText(Html.fromHtml(rs.getString(R.string.object_title)));
             mTitleTextView.append(mObjectItem.getTitle());
 
@@ -138,6 +165,7 @@ public class PhotoGalleryFragment extends Fragment {
         public void onBindViewHolder(@NonNull ObjectItemHolder holder, int position) {
             ObjectItem objectItem = mObjectItems.get(position);
             holder.bindObjectItem(objectItem);
+            mThumbnailDownloader.queueThumbnail(holder, objectItem.getPrimaryImageUrl());
         }
 
         @Override

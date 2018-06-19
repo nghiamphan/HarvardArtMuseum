@@ -29,7 +29,7 @@ public class HarvardArtMuseumFetch {
             .appendQueryParameter("apikey", API_KEY)
             .build();
 
-    private byte[] getUrlBytes(String urlString) throws IOException {
+    public byte[] getUrlBytes(String urlString) throws IOException {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 

@@ -1,5 +1,6 @@
 package com.nphan.android.harvardartmuseum;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +30,9 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
     private static final String ARG_CULTURE_NAME = "culture_name";
     private static final String ARG_CULTURE_ID = "culture_id";
+
+    private String mCultureName;
+    private String mCultureId;
 
     private List<ObjectItem> mObjectItems = new ArrayList<>();
     private int mPage = 1;
@@ -53,6 +58,18 @@ public class PhotoGalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         //setRetainInstance(true);
         setHasOptionsMenu(true);
+
+        if (getArguments().getString(ARG_CULTURE_NAME) != null) {
+            CultureSharedPreferences.setStoredCultureName(getActivity(), getArguments().getString(ARG_CULTURE_NAME));
+            CultureSharedPreferences.setStoredCultureId(getActivity(), getArguments().getString(ARG_CULTURE_ID));
+            Log.i(TAG, getArguments().getString(ARG_CULTURE_ID));
+        }
+
+        mCultureName = CultureSharedPreferences.getStoredCultureName(getActivity());
+        mCultureId = CultureSharedPreferences.getStoredCultureId(getActivity());
+
+        //Log.i(TAG, mCultureId);
+
         new FetchItemsTask().execute();
     }
 
@@ -87,7 +104,7 @@ public class PhotoGalleryFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         AppCompatActivity activity = (AppCompatActivity) getActivity();
-        activity.getSupportActionBar().setTitle(getArguments().getString(ARG_CULTURE_NAME));
+        activity.getSupportActionBar().setTitle(mCultureName);
     }
 
     private void setupAdapter() {
@@ -129,6 +146,15 @@ public class PhotoGalleryFragment extends Fragment {
                     .load(objectItem.getPrimaryImageUrl())
                     .placeholder(R.drawable.loading_placeholder)
                     .into(mImageView);
+
+            mImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String imageUrl = mObjectItem.getPrimaryImageUrl();
+                    Intent intent = PhotoViewActivity.newIntent(getActivity(), imageUrl);
+                    startActivity(intent);
+                }
+            });
 
             Resources rs = getResources();
 
@@ -180,7 +206,7 @@ public class PhotoGalleryFragment extends Fragment {
     private class FetchItemsTask extends AsyncTask<Void, Void, List<ObjectItem>> {
         @Override
         protected List<ObjectItem> doInBackground(Void... voids) {
-            String cultureId = getArguments().getString(ARG_CULTURE_ID);
+            String cultureId = mCultureId;
             return new HarvardArtMuseumFetch().fetchObjectItems(cultureId, mPage);
         }
 

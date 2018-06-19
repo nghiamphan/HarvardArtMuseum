@@ -23,8 +23,7 @@
             android:parentActivityName=".MainMenuActivity">
         </activity>
         <activity
-            android:name=".PhotoViewActivity"
-            android:parentActivityName=".PhotoGalleryActivity"/>
+            android:name=".PhotoViewActivity" />
     </application>
 
 </manifest>

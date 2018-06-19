@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,16 +58,8 @@ public class PhotoGalleryFragment extends Fragment {
         //setRetainInstance(true);
         setHasOptionsMenu(true);
 
-        if (getArguments().getString(ARG_CULTURE_NAME) != null) {
-            CultureSharedPreferences.setStoredCultureName(getActivity(), getArguments().getString(ARG_CULTURE_NAME));
-            CultureSharedPreferences.setStoredCultureId(getActivity(), getArguments().getString(ARG_CULTURE_ID));
-            Log.i(TAG, getArguments().getString(ARG_CULTURE_ID));
-        }
-
-        mCultureName = CultureSharedPreferences.getStoredCultureName(getActivity());
-        mCultureId = CultureSharedPreferences.getStoredCultureId(getActivity());
-
-        //Log.i(TAG, mCultureId);
+        mCultureName = getArguments().getString(ARG_CULTURE_NAME);
+        mCultureId = getArguments().getString(ARG_CULTURE_ID);
 
         new FetchItemsTask().execute();
     }
@@ -206,8 +197,7 @@ public class PhotoGalleryFragment extends Fragment {
     private class FetchItemsTask extends AsyncTask<Void, Void, List<ObjectItem>> {
         @Override
         protected List<ObjectItem> doInBackground(Void... voids) {
-            String cultureId = mCultureId;
-            return new HarvardArtMuseumFetch().fetchObjectItems(cultureId, mPage);
+            return new HarvardArtMuseumFetch().fetchObjectItems(mCultureId, mPage);
         }
 
         @Override

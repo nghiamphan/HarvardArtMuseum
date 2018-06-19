@@ -58,7 +58,7 @@ public class HarvardArtMuseumFetch {
         return new String(getUrlBytes(urlString));
     }
 
-    private String buildUrl(String  cultureId) {
+    private String buildUrl(String  cultureId, int page) {
         /*
         Note about Harvard Art Museum API:
         There are around 255 cultures, so giving size = 1000 will return all cultures in one page.
@@ -77,7 +77,8 @@ public class HarvardArtMuseumFetch {
             uriBuilder
                     .appendPath(OBJECT_RESOURCE)
                     .appendQueryParameter(CULTURE_RESOURCE, cultureId)
-                    .appendQueryParameter("size", "100");
+                    .appendQueryParameter("size", "100")
+                    .appendQueryParameter("page", Integer.toString(page));
         }
         return uriBuilder.build().toString();
     }
@@ -87,7 +88,7 @@ public class HarvardArtMuseumFetch {
         List<CultureItem> items = new ArrayList<>();
 
         try {
-            String urlString = buildUrl(null);
+            String urlString = buildUrl(null, 1);
             String jsonString = getUrlString(urlString);
             Log.i(TAG, urlString);
             Log.i(TAG, "Received JSON: " + jsonString);
@@ -128,10 +129,21 @@ public class HarvardArtMuseumFetch {
         List<ObjectItem> items = new ArrayList<>();
 
         try {
-            String urlString = buildUrl(cultureId);
+            String urlString = buildUrl(cultureId, 1);
             String jsonString = getUrlString(urlString);
             JSONObject jsonObject = new JSONObject(jsonString);
             parseObjectItems(items, jsonObject);
+
+            // Go through the pages of objects (from page 2)
+            JSONObject infoJsonObject = jsonObject.getJSONObject("info");
+            int pages = infoJsonObject.getInt("pages");
+            for (int i = 2; i <= pages; i++) {
+                urlString = buildUrl(cultureId, i);
+                jsonString = getUrlString(urlString);
+                jsonObject = new JSONObject(jsonString);
+                parseObjectItems(items, jsonObject);
+            }
+
         }
         catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);

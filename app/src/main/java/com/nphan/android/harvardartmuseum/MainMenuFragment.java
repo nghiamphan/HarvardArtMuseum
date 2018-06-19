@@ -9,7 +9,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -21,6 +25,7 @@ public class MainMenuFragment extends Fragment {
 
     private static final String TAG = "MainMenuFragment";
 
+    private List<CultureItem> mPersistedCultureItems = new ArrayList<>();
     private List<CultureItem> mCultureItems = new ArrayList<>();
 
     private RecyclerView mRecyclerView;
@@ -38,6 +43,7 @@ public class MainMenuFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
         new FetchItemsTask().execute();
     }
 
@@ -50,6 +56,35 @@ public class MainMenuFragment extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return v;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_main_menu, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.toolbar_search_item);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                List<CultureItem> items = new ArrayList<>();
+                for (int i = 0; i < mPersistedCultureItems.size(); i++) {
+                    if (mPersistedCultureItems.get(i).getCulture().toLowerCase().contains(newText.toLowerCase())) {
+                        items.add(mPersistedCultureItems.get(i));
+                    }
+                }
+                mCultureItems = items;
+                setupAdapter();
+                return false;
+            }
+        });
     }
 
     private void setupAdapter() {
@@ -131,6 +166,7 @@ public class MainMenuFragment extends Fragment {
 
         @Override
         protected void onPostExecute(List<CultureItem> cultureItems) {
+            mPersistedCultureItems = cultureItems;
             mCultureItems = cultureItems;
             setupAdapter();
         }

@@ -114,7 +114,6 @@ public class HarvardArtMuseumFetch {
             CultureItem item = new CultureItem();
             item.setId(cultureJsonObject.getString("id"));
             item.setCulture(cultureJsonObject.getString("name"));
-            //Log.i(TAG, cultureJsonObject.getString("name"));
             items.add(item);
         }
         Collections.sort(items, new Comparator<CultureItem>() {
@@ -125,22 +124,17 @@ public class HarvardArtMuseumFetch {
         });
     }
 
-    public List<ObjectItem> fetchObjectItems(String cultureId) {
+    public List<ObjectItem> fetchObjectItems(String cultureId, int page) {
         List<ObjectItem> items = new ArrayList<>();
 
         try {
-            String urlString = buildUrl(cultureId, 1);
+            String urlString = buildUrl(cultureId, page);
             String jsonString = getUrlString(urlString);
             JSONObject jsonObject = new JSONObject(jsonString);
-            parseObjectItems(items, jsonObject);
 
-            // Go through the pages of objects (from page 2)
             JSONObject infoJsonObject = jsonObject.getJSONObject("info");
             int pages = infoJsonObject.getInt("pages");
-            for (int i = 2; i <= pages; i++) {
-                urlString = buildUrl(cultureId, i);
-                jsonString = getUrlString(urlString);
-                jsonObject = new JSONObject(jsonString);
+            if (page <= pages) {
                 parseObjectItems(items, jsonObject);
             }
 

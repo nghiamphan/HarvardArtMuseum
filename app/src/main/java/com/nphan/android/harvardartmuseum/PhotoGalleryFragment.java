@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,8 +30,12 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String ARG_CULTURE_ID = "culture_id";
 
     private List<ObjectItem> mObjectItems = new ArrayList<>();
+    private int mPage = 1;
+    private int mStartPos;
+    private static boolean mAsyncTaskRunning = false;
 
     private RecyclerView mRecyclerView;
+    private ObjectItemAdapter mAdapter;
 
     public static PhotoGalleryFragment newInstance(String culture, String cultureId) {
 
@@ -48,7 +51,7 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+        //setRetainInstance(true);
         setHasOptionsMenu(true);
         new FetchItemsTask().execute();
     }
@@ -60,6 +63,22 @@ public class PhotoGalleryFragment extends Fragment {
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                GridLayoutManager layoutManager = (GridLayoutManager) mRecyclerView.getLayoutManager();
+                int lastPosition = layoutManager.findLastVisibleItemPosition();
+
+                if (lastPosition == mObjectItems.size()-1) {
+                    if (!mAsyncTaskRunning) {
+                        mPage += 1;
+                        new FetchItemsTask().execute();
+                        mAsyncTaskRunning = true;
+                    }
+                }
+            }
+        });
 
         return view;
     }
@@ -73,7 +92,15 @@ public class PhotoGalleryFragment extends Fragment {
 
     private void setupAdapter() {
         if (isAdded()) {
-            mRecyclerView.setAdapter(new ObjectItemAdapter(mObjectItems));
+            if (mAdapter == null) {
+                mAdapter = new ObjectItemAdapter(mObjectItems);
+                mRecyclerView.setAdapter(mAdapter);
+            }
+            else {
+                mAdapter.setItems(mObjectItems);
+                mAdapter.notifyItemRangeInserted(mStartPos, mObjectItems.size() - mStartPos);
+            }
+
         }
     }
 
@@ -120,10 +147,14 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     private class ObjectItemAdapter extends RecyclerView.Adapter<ObjectItemHolder> {
-        private List<ObjectItem> mObjectItems;
+        private List<ObjectItem> mItems;
 
         public ObjectItemAdapter(List<ObjectItem> objectItems) {
-            mObjectItems = objectItems;
+            this.mItems = objectItems;
+        }
+
+        public void setItems(List<ObjectItem> items) {
+            this.mItems = items;
         }
 
         @NonNull
@@ -136,13 +167,13 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ObjectItemHolder holder, int position) {
-            ObjectItem objectItem = mObjectItems.get(position);
+            ObjectItem objectItem = mItems.get(position);
             holder.bindObjectItem(objectItem);
         }
 
         @Override
         public int getItemCount() {
-            return mObjectItems.size();
+            return mItems.size();
         }
     }
 
@@ -150,14 +181,15 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         protected List<ObjectItem> doInBackground(Void... voids) {
             String cultureId = getArguments().getString(ARG_CULTURE_ID);
-            return new HarvardArtMuseumFetch().fetchObjectItems(cultureId);
+            return new HarvardArtMuseumFetch().fetchObjectItems(cultureId, mPage);
         }
 
         @Override
         protected void onPostExecute(List<ObjectItem> objectItems) {
-            mObjectItems = objectItems;
-            Log.i(TAG, Integer.toString(objectItems.size()));
+            mStartPos = mObjectItems.size();
+            mObjectItems.addAll(objectItems);
             setupAdapter();
+            mAsyncTaskRunning = false;
         }
     }
 }

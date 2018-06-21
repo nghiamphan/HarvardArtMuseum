@@ -10,10 +10,12 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -94,8 +96,15 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_photo_gallery, menu);
+
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         activity.getSupportActionBar().setTitle(mCultureName);
+
+        MenuItem toggleItem = menu.findItem(R.id.toggle_view);
+
+        SwitchCompat switchCompat = toggleItem.getActionView().findViewById(R.id.switcher);
+
     }
 
     private void setupAdapter() {

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HarvardArtMuseum</string>
+    <string name="app_name">Harvard Art Museum</string>
     <string name="object_title">
         <![CDATA[
         <b>Title: </b>
@@ -21,4 +21,5 @@
         ]]>
     </string>
     <string name="search">Search</string>
+    <string name="toggle_view_title">Change View</string>
 </resources>

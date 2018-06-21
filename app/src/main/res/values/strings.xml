@@ -22,4 +22,6 @@
     </string>
     <string name="search">Search</string>
     <string name="toggle_view_title">Change View</string>
+    <string name="detail">Detail</string>
+    <string name="compact">Compact</string>
 </resources>

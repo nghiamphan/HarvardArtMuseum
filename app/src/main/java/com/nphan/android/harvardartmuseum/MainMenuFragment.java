@@ -118,7 +118,7 @@ public class MainMenuFragment extends Fragment {
     }
 
     private class CultureItemAdapter extends RecyclerView.Adapter<CultureItemHolder> {
-        private List<CultureItem> mCultureItems;
+        private final List<CultureItem> mCultureItems;
 
         public CultureItemAdapter(List<CultureItem> cultureItems) {
             mCultureItems = cultureItems;

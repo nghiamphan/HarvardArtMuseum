@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -35,10 +36,11 @@ public class PhotoGalleryFragment extends Fragment {
     private String mCultureName;
     private String mCultureId;
 
-    private List<ObjectItem> mObjectItems = new ArrayList<>();
+    private final List<ObjectItem> mObjectItems = new ArrayList<>();
     private int mPage = 1;
     private int mStartPos;
     private static boolean mAsyncTaskRunning = false;
+    private boolean mIsCompactView = false;
 
     private RecyclerView mRecyclerView;
     private ObjectItemAdapter mAdapter;
@@ -104,6 +106,21 @@ public class PhotoGalleryFragment extends Fragment {
         MenuItem toggleItem = menu.findItem(R.id.toggle_view);
 
         SwitchCompat switchCompat = toggleItem.getActionView().findViewById(R.id.switcher);
+        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // isChecked: compact view; not isChecked: detail view
+                if (isChecked) {
+                    mIsCompactView = true;
+                    mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+                }
+                else {
+                    mIsCompactView = false;
+                    mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+                }
+                mRecyclerView.setAdapter(mAdapter);
+            }
+        });
 
     }
 
@@ -133,10 +150,13 @@ public class PhotoGalleryFragment extends Fragment {
         public ObjectItemHolder(View itemView) {
             super(itemView);
             mImageView = itemView.findViewById(R.id.object_image);
-            mTitleTextView = itemView.findViewById(R.id.object_title);
-            mDateTextView = itemView.findViewById(R.id.object_date);
-            mPeriodTextView = itemView.findViewById(R.id.object_period);
-            mMediumTextView = itemView.findViewById(R.id.object_medium);
+
+            if (!mIsCompactView) {
+                mTitleTextView = itemView.findViewById(R.id.object_title);
+                mDateTextView = itemView.findViewById(R.id.object_date);
+                mPeriodTextView = itemView.findViewById(R.id.object_period);
+                mMediumTextView = itemView.findViewById(R.id.object_medium);
+            }
         }
 
         public void bindObjectItem(ObjectItem objectItem) {
@@ -156,19 +176,21 @@ public class PhotoGalleryFragment extends Fragment {
                 }
             });
 
-            Resources rs = getResources();
+            if (!mIsCompactView) {
+                Resources rs = getResources();
 
-            mTitleTextView.setText(Html.fromHtml(rs.getString(R.string.object_title)));
-            mTitleTextView.append(mObjectItem.getTitle());
+                mTitleTextView.setText(Html.fromHtml(rs.getString(R.string.object_title)));
+                mTitleTextView.append(mObjectItem.getTitle());
 
-            mDateTextView.setText(Html.fromHtml(rs.getString(R.string.object_date)));
-            mDateTextView.append(mObjectItem.getDated());
+                mDateTextView.setText(Html.fromHtml(rs.getString(R.string.object_date)));
+                mDateTextView.append(mObjectItem.getDated());
 
-            mPeriodTextView.setText(Html.fromHtml(rs.getString(R.string.object_period)));
-            mPeriodTextView.append(mObjectItem.getPeriod());
+                mPeriodTextView.setText(Html.fromHtml(rs.getString(R.string.object_period)));
+                mPeriodTextView.append(mObjectItem.getPeriod());
 
-            mMediumTextView.setText(Html.fromHtml(rs.getString(R.string.object_medium)));
-            mMediumTextView.append(mObjectItem.getMedium());
+                mMediumTextView.setText(Html.fromHtml(rs.getString(R.string.object_medium)));
+                mMediumTextView.append(mObjectItem.getMedium());
+            }
         }
     }
 
@@ -187,7 +209,7 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public ObjectItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(getActivity());
-            View itemView = inflater.inflate(R.layout.list_item_photo_gallery, parent, false);
+            View itemView = inflater.inflate(viewType, parent, false);
             return new ObjectItemHolder(itemView);
         }
 
@@ -200,6 +222,16 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mItems.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (mIsCompactView) {
+                return R.layout.list_item_photo_gallery_compact;
+            }
+            else {
+                return R.layout.list_item_photo_gallery_detail;
+            }
         }
     }
 

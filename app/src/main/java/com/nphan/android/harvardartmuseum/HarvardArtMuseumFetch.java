@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class HarvardArtMuseumFetch {
+class HarvardArtMuseumFetch {
 
     private static final String TAG = "ArtFetch";
     private static final String API_KEY = "57818250-6aaa-11e8-932e-e1bd830b7046";
@@ -150,10 +150,10 @@ public class HarvardArtMuseumFetch {
     }
 
     private void parseObjectItems(List<ObjectItem> items, JSONObject jsonObject) throws JSONException {
-        JSONArray recordsJsonArrray = jsonObject.getJSONArray("records");
+        JSONArray recordsJsonArray = jsonObject.getJSONArray("records");
 
-        for (int i = 0; i < recordsJsonArrray.length(); i++) {
-            JSONObject js = recordsJsonArrray.getJSONObject(i);
+        for (int i = 0; i < recordsJsonArray.length(); i++) {
+            JSONObject js = recordsJsonArray.getJSONObject(i);
 
             if (!js.has("primaryimageurl") || js.isNull("primaryimageurl")) {
                 continue;

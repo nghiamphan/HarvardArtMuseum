@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
     private static final String ARG_CULTURE_NAME = "culture_name";
     private static final String ARG_CULTURE_ID = "culture_id";
+    private static final int COLUMN_SIZE = 300;
 
     private String mCultureName;
     private String mCultureId;
@@ -112,7 +114,16 @@ public class PhotoGalleryFragment extends Fragment {
                 // isChecked: compact view; not isChecked: detail view
                 if (isChecked) {
                     mIsCompactView = true;
-                    mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+                    mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            int width = mRecyclerView.getWidth();
+                            int spanCount = width / COLUMN_SIZE;
+                            mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), spanCount));
+                        }
+                    });
+
                 }
                 else {
                     mIsCompactView = false;
